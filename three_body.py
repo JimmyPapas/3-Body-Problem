@@ -12,6 +12,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import matplotlib.pyplot as plt
 from math import sqrt
 from typing import Iterable, List, Sequence, Tuple
 
@@ -166,6 +167,11 @@ def main(argv: Iterable[str] | None = None) -> int:
     )
     parser.add_argument("--dt", type=float, default=1.0, help="Time step in seconds.")
     parser.add_argument("--steps", type=int, default=1000, help="Number of simulation steps.")
+    parser.add_argument(
+        "--show-plot",
+        action="store_true",
+        help="Display a matplotlib plot of the body trajectories.",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     if args.preset:
@@ -174,10 +180,24 @@ def main(argv: Iterable[str] | None = None) -> int:
         args.positions = preset["positions"]
         args.velocities = preset["velocities"]
 
-    trajectories = simulate(args.masses, args.positions, args.velocities, args.dt, args.steps)
+    trajectories = simulate(
+        args.masses, args.positions, args.velocities, args.dt, args.steps
+    )
     for i, body in enumerate(trajectories, start=1):
         x, y = body[-1]
         print(f"Body {i} final position: ({x:.3f}, {y:.3f})")
+
+    if args.show_plot:
+        for i, body in enumerate(trajectories, start=1):
+            xs = [pos[0] for pos in body]
+            ys = [pos[1] for pos in body]
+            plt.plot(xs, ys, label=f"Body {i}")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.axis("equal")
+        plt.legend()
+        plt.show()
+
     return 0
 
 
